@@ -1,0 +1,3 @@
+C:/Code/MTM/HW1/Dry/build/CMakeFiles/my_executable.dir
+C:/Code/MTM/HW1/Dry/build/CMakeFiles/edit_cache.dir
+C:/Code/MTM/HW1/Dry/build/CMakeFiles/rebuild_cache.dir
