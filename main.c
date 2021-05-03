@@ -52,6 +52,27 @@ bool isListSorted(Node list)
 }
 
 
+// Allocate next node
+Node allocateNextNode (Node current_node, Node list_start)
+{
+    Node next_node = (Node)malloc(sizeof(Node));
+    if (next_node == NULL)
+    {
+        // Free everything we allocated so far
+        while (list_start)
+        {
+            next_node = list_start->next;
+            free(list_start);
+            list_start = next_node;
+        }
+        return NULL;
+    }
+
+    // Return new node
+    next_node->next = NULL;
+    return next_node;
+}
+
 
 // TO PUBLISH
 Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code)
@@ -83,12 +104,13 @@ Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code)
 
     // Memory allocation for new list - allocate all
     int total_length = list1_length + list2_length;
-    Node new_list = (Node)malloc(sizeof(Node)*total_length);
+    Node new_list = (Node)malloc(sizeof(Node));
     if (new_list == NULL)
     {
         *error_code = MEMORY_ERROR;
         return NULL;
     }
+    new_list->next = NULL;
 
     // Merge the two list
     //Node first_node   = new_list; // Will be returned
@@ -108,19 +130,46 @@ Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code)
         {
             // Put the value in the current node and move list1 to 
             current_node->x = list2->x;
-            list2 = list2->next;
-
-            // current_node
-            current_node->next = current_node++;
-            
+            list2           = list2->next;
         }
         else
         {
-            // put other val
-            // 2 = 2->next
+            current_node->x = list1->x;
+            list1           = list1->next;
         }
 
-        // update current_node
+        // Allocate next node
+        Node next_node = allocateNextNode(current_node, new_list);
+        if (next_node == NULL)
+        {
+            *error_code = MEMORY_ERROR;
+            return NULL;
+        }
+        
+    
+        // Moving current_node forward
+        current_node->next = next_node;
+        current_node       = next_node;
+    }
+
+    // If we didn't put all of list1's elements, do it here
+    while (list1)
+    {
+        current_node->x = list1->x;
+        
+        // Allocate next node
+        Node next_node = allocateNextNode(current_node, new_list);
+        if (next_node == NULL)
+        {
+            *error_code = MEMORY_ERROR;
+            return NULL;
+        }
+    }
+
+    // If we didn't put all of list2's elements, do it here
+    while (list2)
+    {
+        
     }
 
     // PUT LEFTOVERS
