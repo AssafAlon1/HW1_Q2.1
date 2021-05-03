@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <assert.h>
 
 typedef struct node_t {
@@ -21,7 +22,7 @@ bool isListSorted(Node list);
 Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code);
 
 
-// TODO
+// helper
 int getListLength(Node list)
 {
     int list_length = 0;
@@ -33,7 +34,7 @@ int getListLength(Node list)
     return list_length;
 }
 
-// TODO
+// helper
 bool isListSorted(Node list)
 {
     // Check if current node & next node aren't NULL
@@ -80,17 +81,49 @@ Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code)
         return NULL;
     }
 
-    // memory allocation for new list
+    // Memory allocation for new list - allocate all
     int total_length = list1_length + list2_length;
-    Node new_list = malloc(sizeof(Node)*total_length);
+    Node new_list = (Node)malloc(sizeof(Node)*total_length);
     if (new_list == NULL)
     {
         *error_code = MEMORY_ERROR;
         return NULL;
     }
 
-    // merge the two list
-    
+    // Merge the two list
+    //Node first_node   = new_list; // Will be returned
+
+    Node current_node = new_list; // For iteration purposes
+
+    for (int i = 0; i < total_length; i++)
+    {
+        // If we finished adding a list to our new list, exit the loop
+        if (list1 == NULL || list2 == NULL)
+        {
+            break;
+        }
+
+        // If current list1 value is bigger than the current list2 value
+        if (list1->x > list2->x)
+        {
+            // Put the value in the current node and move list1 to 
+            current_node->x = list2->x;
+            list2 = list2->next;
+
+            // current_node
+            current_node->next = current_node++;
+            
+        }
+        else
+        {
+            // put other val
+            // 2 = 2->next
+        }
+
+        // update current_node
+    }
+
+    // PUT LEFTOVERS
 
     // 
 
@@ -100,3 +133,23 @@ Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code)
     return NULL; // return the real
 
 }   //// EDGE CASE
+
+
+
+
+
+// // helper function to handle this
+//         if (list1 == NULL)
+//         {
+//             current_node->x = list2->x;
+//             list2 = list2->next;
+//             continue;
+//         }
+
+//         if (list2 == NULL)
+//         {
+//             current_node->x = list1->x;
+//             list1 = list1->next;
+//             continue;
+//         }
+//         //
