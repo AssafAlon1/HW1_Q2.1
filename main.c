@@ -45,6 +45,10 @@ bool isListSorted(Node list)
         {
             return false;
         }
+        else
+        {
+            list = list->next;
+        }
     }
 
     // Reached NULL, the list is sorted
@@ -53,7 +57,7 @@ bool isListSorted(Node list)
 
 
 // Allocate next node
-Node allocateNextNode (Node current_node, Node list_start)
+Node allocateNextNode (Node list_start)
 {
     Node next_node = (Node)malloc(sizeof(Node));
     if (next_node == NULL)
@@ -73,19 +77,47 @@ Node allocateNextNode (Node current_node, Node list_start)
     return next_node;
 }
 
+// Adds all elements from old_list to new_list in their order. Returns true if process succeded
+bool addAllElementsToNewList(Node old_list, Node new_list, ErrorCode *error_code)
+{
+    while (old_list)
+    {
+        new_list->x = old_list->x;
 
-// TO PUBLISH
+        // Finished scanning the list
+        if (old_list->next == NULL)
+        {
+            break;
+        }
+
+        // Allocate next node
+        Node next_node = allocateNextNode(new_list);
+        if (next_node == NULL)
+        {
+            *error_code = MEMORY_ERROR;
+            return false;
+        }
+
+        // Moving current_node forward
+        new_list->next = next_node;
+        new_list       = next_node;
+        old_list       = old_list->next;
+    }
+    return true;
+}
+
+// Merges two sorted lists into a new one, returning it. Error codes will be provided through the ErrorCode variable 
 Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code)
 {
 
-    // error_code cannot be NULL, otherwise we can't alert the user if something's wrong
+    // Verify error_code is a valid pointer
     if (error_code == NULL)
     {
         // can't update error_code :(
         return NULL;
     }
     
-    // Check if lists are empty
+    // Verify the lists aren't empty
     int list1_length = getListLength(list1);    
     int list2_length = getListLength(list2);
     
@@ -95,91 +127,59 @@ Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code)
         return NULL;
     }
     
-    // Check if lists are sorted
+    // Verify the lists are sorted
     if (isListSorted(list1) != true || isListSorted(list1) != true)
     {
         *error_code = UNSORTED_LIST;
         return NULL;
     }
 
-    // Memory allocation for new list - allocate all
-    int total_length = list1_length + list2_length;
-    Node new_list = (Node)malloc(sizeof(Node));
-    if (new_list == NULL)
-    {
-        *error_code = MEMORY_ERROR;
-        return NULL;
-    }
-    new_list->next = NULL;
+    // Memory allocation for new list - allocate 1 node at a time
+    Node new_list = allocateNextNode(NULL);          // Allocate first node
 
     // Merge the two list
-    //Node first_node   = new_list; // Will be returned
-
     Node current_node = new_list; // For iteration purposes
 
-    for (int i = 0; i < total_length; i++)
+    // While both lists still have elements    
+    while (list1 && list2)
     {
-        // If we finished adding a list to our new list, exit the loop
-        if (list1 == NULL || list2 == NULL)
-        {
-            break;
-        }
-
         // If current list1 value is bigger than the current list2 value
         if (list1->x > list2->x)
         {
-            // Put the value in the current node and move list1 to 
+            // Put the value in the current node and move list1 to
             current_node->x = list2->x;
             list2           = list2->next;
         }
         else
         {
+            // Put the value in the current node and move list2 to 
             current_node->x = list1->x;
             list1           = list1->next;
         }
 
         // Allocate next node
-        Node next_node = allocateNextNode(current_node, new_list);
+        Node next_node = allocateNextNode(new_list);
         if (next_node == NULL)
         {
             *error_code = MEMORY_ERROR;
             return NULL;
         }
         
-    
         // Moving current_node forward
         current_node->next = next_node;
         current_node       = next_node;
     }
 
-    // If we didn't put all of list1's elements, do it here
-    while (list1)
+    // 1 list still has elements - fi
+    Node list_remainer = list1 == NULL ? list2 : list1;
+    bool add_elements_result = addAllElementsToNewList(list_remainer, current_node, error_code);
+    if (add_elements_result == false)
     {
-        current_node->x = list1->x;
-        
-        // Allocate next node
-        Node next_node = allocateNextNode(current_node, new_list);
-        if (next_node == NULL)
-        {
-            *error_code = MEMORY_ERROR;
-            return NULL;
-        }
+        return NULL;
     }
 
-    // If we didn't put all of list2's elements, do it here
-    while (list2)
-    {
-        
-    }
-
-    // PUT LEFTOVERS
-
-    // 
-
-    // assert();
-    
-    //*error_code = SUCCESS
-    return NULL; // return the real
+    *error_code = SUCCESS;
+    return new_list;
 
 }   //// EDGE CASE
 
@@ -187,18 +187,69 @@ Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code)
 
 
 
-// // helper function to handle this
-//         if (list1 == NULL)
-//         {
-//             current_node->x = list2->x;
-//             list2 = list2->next;
-//             continue;
-//         }
 
-//         if (list2 == NULL)
-//         {
-//             current_node->x = list1->x;
-//             list1 = list1->next;
-//             continue;
-//         }
-//         //
+
+
+
+
+
+
+void printList (Node list)
+{
+    while (list)
+    {
+        printf("Printing");
+        printf("%d, ", list->x);
+        list = list->next;
+    }
+    printf("\n");
+}
+
+int main()
+{
+    Node list1 = allocateNextNode(NULL);
+    Node list2 = allocateNextNode(NULL);
+
+    list1->x = 8;
+    list2->x = 2;
+
+    int current_list = 1;
+    Node iter = list1;
+    while (current_list <= 2)
+    {
+        int input = -1;
+        printf("Enter number for list%d. To move on press -1\n", current_list);
+        scanf("%d", &input);
+        printf("GOT %d\n", input);
+        if(input == -1)
+        {
+            current_list++;
+            iter = list2;
+        }
+        else
+        {
+            Node next_node  = allocateNextNode(list1);
+            iter->next = next_node;
+            next_node->x    = input;
+            iter = next_node;
+        }
+
+    }
+
+    printList(list1);
+    printList(list2);
+    printList(list2);
+    printList(list2);
+    ErrorCode err = SUCCESS;
+
+    Node merged = mergeSortedLists(list1, list2, &err);
+    if (merged == NULL)
+    {
+        printf("err is %d", err);
+    }
+    else
+    {
+        printf("supposed to work, err is %d\n", err);
+    }
+    printList(merged);
+}
