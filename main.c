@@ -11,7 +11,6 @@ typedef struct node_t {
 typedef enum {
     SUCCESS=0,
     MEMORY_ERROR,
-    EMPTY_LIST,
     UNSORTED_LIST,
     NULL_ARGUMENT,
 } ErrorCode;
@@ -41,7 +40,7 @@ bool isListSorted(Node list)
     while (list != NULL && list->next != NULL)
     {
         // If the current value is BIGGER than the next one, the list isn't sorted
-        if (list->x > list->next)
+        if (list->x > list->next->x)
         {
             return false;
         }
@@ -57,33 +56,47 @@ bool isListSorted(Node list)
 Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code)
 {
 
-    /* ??? WHAT IF ERROR_CODE IS NULL ??? */
-
-    // Check if lists are empty
-    int list1_lenght = getListLength(list1);    
-    int list2_lenght = getListLength(list2);
-    if (list1_lenght == 0 || list2_lenght == 0)
+    // error_code cannot be NULL, otherwise we can't alert the user if something's wrong
+    if (error_code == NULL)
     {
-        *error_code = EMPTY_LIST;
-        /// return NULL; ????
+        // can't update error_code :(
+        return NULL;
     }
-
+    
+    // Check if lists are empty
+    int list1_length = getListLength(list1);    
+    int list2_length = getListLength(list2);
+    
+    if (list1_length == 0 || list2_length == 0)
+    {
+        *error_code = NULL_ARGUMENT;
+        return NULL;
+    }
+    
     // Check if lists are sorted
     if (isListSorted(list1) != true || isListSorted(list1) != true)
     {
-        return 
+        *error_code = UNSORTED_LIST;
+        return NULL;
     }
-    // check lists lenght
 
     // memory allocation for new list
-
-    // if the memory alocation failed , return MEMORY_ERROR
+    int total_length = list1_length + list2_length;
+    Node new_list = malloc(sizeof(Node)*total_length);
+    if (new_list == NULL)
+    {
+        *error_code = MEMORY_ERROR;
+        return NULL;
+    }
 
     // merge the two list
+    
 
     // 
 
     // assert();
     
+    //*error_code = SUCCESS
+    return NULL; // return the real
 
 }   //// EDGE CASE
