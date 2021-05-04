@@ -59,7 +59,7 @@ bool isListSorted(Node list)
 // Allocate next node
 Node allocateNextNode (Node list_start)
 {
-    Node next_node = (Node)malloc(sizeof(Node));
+    Node next_node = malloc(sizeof(*next_node));
     if (next_node == NULL)
     {
         // Free everything we allocated so far
@@ -190,15 +190,20 @@ Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code)
 
 
 
-
-
-
+void free_nemo(Node list)
+{
+    while(list)
+    {
+        Node next_node = list->next;
+        free(list);
+        list = next_node;
+    }
+}
 
 void printList (Node list)
 {
     while (list)
     {
-        printf("Printing");
         printf("%d, ", list->x);
         list = list->next;
     }
@@ -238,8 +243,6 @@ int main()
 
     printList(list1);
     printList(list2);
-    printList(list2);
-    printList(list2);
     ErrorCode err = SUCCESS;
 
     Node merged = mergeSortedLists(list1, list2, &err);
@@ -252,4 +255,11 @@ int main()
         printf("supposed to work, err is %d\n", err);
     }
     printList(merged);
+
+    free_nemo(list1);
+    free_nemo(list2);
+    free_nemo(merged);
+    list1 = list2 = merged = NULL;
+
+    return 0;
 }
