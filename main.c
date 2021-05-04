@@ -1,3 +1,4 @@
+// include & typedefs
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -17,6 +18,7 @@ typedef enum {
 } ErrorCode;
 
 
+// function declaration
 int getListLength(Node list);
 bool isListSorted(Node list);
 Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code);
@@ -185,11 +187,6 @@ Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code)
 
 
 
-
-
-
-
-
 void free_nemo(Node list)
 {
     while(list)
@@ -215,8 +212,8 @@ int main()
     Node list1 = allocateNextNode(NULL);
     Node list2 = allocateNextNode(NULL);
 
-    list1->x = 8;
-    list2->x = 2;
+    list1->x = -9999;
+    list2->x = 0;
 
     int current_list = 1;
     Node iter = list1;
@@ -225,7 +222,6 @@ int main()
         int input = -1;
         printf("Enter number for list%d. To move on press -1\n", current_list);
         scanf("%d", &input);
-        printf("GOT %d\n", input);
         if(input == -1)
         {
             current_list++;
@@ -243,7 +239,8 @@ int main()
 
     printList(list1);
     printList(list2);
-    ErrorCode err = SUCCESS;
+    ErrorCode err;
+
 
     Node merged = mergeSortedLists(list1, list2, &err);
     if (merged == NULL)
@@ -252,10 +249,10 @@ int main()
     }
     else
     {
-        printf("supposed to work, err is %d\n", err);
-    }
-    printList(merged);
+        printList(merged);
 
+    }
+    
     free_nemo(list1);
     free_nemo(list2);
     free_nemo(merged);
