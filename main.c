@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+//#define _FORCE_MEM_ERROR
+
 typedef struct node_t {
     int x;
     struct node_t *next;
@@ -23,6 +25,22 @@ int getListLength(Node list);
 bool isListSorted(Node list);
 Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code);
 
+
+
+
+
+
+// internal helper functions
+
+void printList (Node list)
+{
+    while (list)
+    {
+        printf("%d, ", list->x);
+        list = list->next;
+    }
+    printf("\n");
+}
 
 // helper
 int getListLength(Node list)
@@ -54,23 +72,41 @@ bool isListSorted(Node list)
     }
 
     // Reached NULL, the list is sorted
+    printf("list is sorted\n");
     return true;
 }
 
 
+
+
+// Frees the entire list
+void freeFullList(Node list)
+{
+    while(list)
+    {
+        Node next_node = list->next;
+        free(list);
+        list = next_node;
+    }
+}
+
 // Allocate next node
 Node allocateNextNode (Node list_start)
 {
+    #ifdef _FORCE_MEM_ERROR
+    if (list_start != NULL)
+    {
+        freeFullList(list_start);
+        return NULL;
+    }
+    
+    #endif
     Node next_node = malloc(sizeof(*next_node));
+
+    // If the allocation failed, free everything we allocated so far
     if (next_node == NULL)
     {
-        // Free everything we allocated so far
-        while (list_start)
-        {
-            next_node = list_start->next;
-            free(list_start);
-            list_start = next_node;
-        }
+        freeFullList(list_start);
         return NULL;
     }
 
@@ -130,16 +166,20 @@ Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code)
     }
     
     // Verify the lists are sorted
-    if (isListSorted(list1) != true || isListSorted(list1) != true)
+    if (isListSorted(list1) != true || isListSorted(list2) != true)
     {
         *error_code = UNSORTED_LIST;
         return NULL;
     }
 
     // Memory allocation for new list - allocate 1 node at a time
-    Node new_list = allocateNextNode(NULL);          // Allocate first node
+    Node new_list = allocateNextNode(NULL);
+    if (new_list == NULL)
+    {
+        *error_code = MEMORY_ERROR;
+        return NULL;
+    }
 
-    // Merge the two list
     Node current_node = new_list; // For iteration purposes
 
     // While both lists still have elements    
@@ -187,25 +227,8 @@ Node mergeSortedLists(Node list1, Node list2, ErrorCode* error_code)
 
 
 
-void free_nemo(Node list)
-{
-    while(list)
-    {
-        Node next_node = list->next;
-        free(list);
-        list = next_node;
-    }
-}
 
-void printList (Node list)
-{
-    while (list)
-    {
-        printf("%d, ", list->x);
-        list = list->next;
-    }
-    printf("\n");
-}
+
 
 int main()
 {
@@ -214,7 +237,7 @@ int main()
 
     list1->x = -9999;
     list2->x = 0;
-
+    
     int current_list = 1;
     Node iter = list1;
     while (current_list <= 2)
@@ -229,18 +252,38 @@ int main()
         }
         else
         {
-            Node next_node  = allocateNextNode(list1);
-            iter->next = next_node;
-            next_node->x    = input;
-            iter = next_node;
+            if (input == -2)
+            {
+                current_list++;
+                if (current_list == 1)
+                {
+                    freeFullList(list1);
+                    list1 = NULL;
+                    iter = list2;
+                }
+                else
+                {
+                    freeFullList(list2);
+                    list2 = NULL;
+                    iter = NULL;
+                }
+            }
+            else
+            {
+                Node next_node  = allocateNextNode(list1);
+                iter->next = next_node;
+                next_node->x    = input;
+                iter = next_node;
+            }
         }
 
     }
 
+    printf("lists:\n");
     printList(list1);
     printList(list2);
     ErrorCode err;
-
+    printf("\n");
 
     Node merged = mergeSortedLists(list1, list2, &err);
     if (merged == NULL)
@@ -253,9 +296,9 @@ int main()
 
     }
     
-    free_nemo(list1);
-    free_nemo(list2);
-    free_nemo(merged);
+    freeFullList(list1);
+    freeFullList(list2);
+    freeFullList(merged);
     list1 = list2 = merged = NULL;
 
     return 0;
